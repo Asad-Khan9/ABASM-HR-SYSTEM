@@ -4,12 +4,6 @@ from datetime import date, datetime
 import pandas as pd
 def employee_dashboard(username):
 
-    if st.sidebar.button("Logout"):
-        st.session_state.logged_in = False
-        st.session_state.username = None
-        st.session_state.user_type = None
-        st.experimental_rerun()
-
     st.title("Employee Dashboard")
     
     tab1, tab2, tab3 = st.tabs(["Vacation Leave Request","Absence Leave Request", "View Leave Status"])

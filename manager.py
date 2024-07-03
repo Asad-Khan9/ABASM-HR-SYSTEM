@@ -13,18 +13,13 @@ from html_contents import *
 
 
 def manager_dashboard(username):
-    if st.sidebar.button("Logout"):
-        st.session_state.logged_in = False
-        st.session_state.username = None
-        st.session_state.user_type = None
-        st.experimental_rerun()
-
+   
     st.title("Manager Dashboard")
     
     # Fetch all requests
     requests = fetch_all_employee_requests()
     # requests.reverse()
-    tab1, tab2 = st.tabs(["Pending Leave Requests", "Employee Contract"])
+    tab1, tab2, tab3 = st.tabs(["Pending Leave Requests", "Employee Contract", "Employee Details"])
 
     with tab1:
         def generate_request_pdf(request_data, action):
@@ -138,4 +133,13 @@ def manager_dashboard(username):
             
             # Offer the PDF as a download
             st.markdown(get_binary_file_downloader_html(pdf_data, 'Contract.pdf', 'Download PDF'), unsafe_allow_html=True)
+
+    with tab3:
+        employee_usernames = get_employee_username_by_hr_username(username)
+        if employee_usernames:
+            st.write("Employees under your management:")
+            for emp_username in employee_usernames:
+                st.write(f"- {emp_username}")
+        else:
+            st.write("No employees found under your management.")
 

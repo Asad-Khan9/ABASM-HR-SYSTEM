@@ -16,18 +16,16 @@ def check_company_exists():
     conn.close()
     return result is not None
 
-def register_company(company_name, username, password):
+def register_company(company_name):
     conn = sqlite3.connect('hr_system.db')
     c = conn.cursor()
     try:
         c.execute("INSERT INTO Companies (company_name) VALUES (?)", (company_name,))
         company_id = c.lastrowid
-        c.execute("INSERT INTO HR_Managers (username, password, company_id) VALUES (?, ?, ?)",
-                  (username, hash_password(password), company_id))
         conn.commit()
-        return True
+        return company_id
     except sqlite3.IntegrityError:
-        return False
+        return None
     finally:
         conn.close()
 
@@ -110,4 +108,34 @@ def insert_leave_status(username, name, employee_id, leave_status, from_date, to
     conn.close()
 
 
-    
+
+def get_companies():
+    conn = sqlite3.connect('hr_system.db')
+    c = conn.cursor()
+    c.execute("SELECT company_id, company_name FROM Companies")
+    companies = c.fetchall()
+    conn.close()
+    return companies
+
+def register_hr(username, password, company_id):
+    conn = sqlite3.connect('hr_system.db')
+    c = conn.cursor()
+    try:
+        c.execute("INSERT INTO HR_Managers (username, password, company_id) VALUES (?, ?, ?)",
+                  (username, hash_password(password), company_id))
+        conn.commit()
+        return True
+    except sqlite3.IntegrityError:
+        return False
+    finally:
+        conn.close()
+def get_employee_username_by_hr_username(hr_username):
+    conn = sqlite3.connect('hr_system.db')
+    c = conn.cursor()
+    c.execute("SELECT username FROM Users WHERE company_id = (SELECT company_id FROM HR_Managers WHERE username = ?)", (hr_username,))
+    results = c.fetchall()
+    conn.close()
+    return [result[0] for result in results] if results else []
+
+def helli():
+    print("hello")
