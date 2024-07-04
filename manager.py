@@ -84,6 +84,7 @@ def manager_dashboard(username):
 
                             # Perform processing logic here (e.g., update status in database, generate PDF)
                             insert_leave_status(username, row["Name"], row["Employee ID"], action, row["From"], row["To"], row["Leave Type"])
+                            st.success(f"Leave request for {row['Name']} processed successfully.")
                         #-->
                             # pdf_content = generate_request_pdf(row, action)
                             # st.markdown(get_binary_file_downloader_html(pdf_content, f'Leave_Request_{row["Employee ID"]}.pdf', 'Download PDF'), unsafe_allow_html=True)
