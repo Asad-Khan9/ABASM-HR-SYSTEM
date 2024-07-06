@@ -33,7 +33,15 @@ def init_db():
                  to_date TEXT NOT NULL,
                  Type_of_leave TEXT NOT NULL,
                  Reason TEXT NOT NULL,
-                 main_type TEXT)''')
+                 main_type TEXT,
+                 Appointment_from_date TEXT,
+                 Appointment_to_date TEXT,
+                 sick_from_date TEXT,
+                 sick_to_date TEXT,
+                 appointment_letter_PDF BLOB,
+                 sick_letter_PDF BLOB,
+                 other_reason TEXT,
+                 FOREIGN KEY (Username) REFERENCES Users(username))''')
     
     # c.execute('''CREATE TABLE IF NOT EXISTS Leave_Status
     #              (Username TEXT NOT NULL,

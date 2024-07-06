@@ -52,16 +52,24 @@ def main():
                         if user_type == "HR Manager":
                             company_option = st.radio("Company", ["Existing Company", "New Company"])
                             if company_option == "Existing Company":
+                                if companies:
+                                    company_names = [company[1] for company in companies]
+                                    selected_company = st.selectbox("Select Company", company_names, key="signup_company")
+                                    company_id = next(company[0] for company in companies if company[1] == selected_company)
+                                else:
+                                    st.error("No existing companies. Please register a new company.")
+                                    company_option = "New Company"
+                                    return
+                            if company_option == "New Company":
+                                new_company_name = st.text_input("New Company Name")
+                        else:
+                            if companies:
                                 company_names = [company[1] for company in companies]
                                 selected_company = st.selectbox("Select Company", company_names, key="signup_company")
                                 company_id = next(company[0] for company in companies if company[1] == selected_company)
                             else:
-                                new_company_name = st.text_input("New Company Name")
-                        else:
-                            company_names = [company[1] for company in companies]
-                            selected_company = st.selectbox("Select Company", company_names, key="signup_company")
-                            company_id = next(company[0] for company in companies if company[1] == selected_company)
-
+                                st.error("No companies available. Please contact an HR Manager to create a company first.")
+                                return
                         username = st.text_input("New Username", key="signup_username")
                         password = st.text_input("New Password", type="password", key="signup_password")
 
