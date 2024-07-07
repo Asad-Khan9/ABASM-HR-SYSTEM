@@ -2,6 +2,8 @@ import streamlit as st
 from helperfunctions import *
 from datetime import date, datetime
 import pandas as pd
+import base64
+
 def employee_dashboard(username):
 
     st.title("Employee Dashboard")
@@ -82,99 +84,192 @@ def employee_dashboard(username):
         # st.write(requests)
         if my_requests:
 
-            st.write("Sample request structure:")
-            # st.write(my_requests)
-            
-            st.table(my_requests)
+            def get_pdf_download_link(pdf_data, filename):
+                if pdf_data:
+                    b64 = base64.b64encode(pdf_data).decode()
+                    return f'<a href="data:application/pdf;base64,{b64}" download="{filename}">Download {filename}</a>'
+                return None
 
+            def get_pdf_display_html(pdf_data):
+                if pdf_data:
+                    b64 = base64.b64encode(pdf_data).decode()
+                    pdf_display = f'<iframe src="data:application/pdf;base64,{b64}" width="800" height="500" type="application/pdf"></iframe>'
+                    return pdf_display
+                return None
+
+
+            # st.table(my_requests)
 
             # for req in my_requests[:2]:
-            #     st.write(req)
-                # status = get_leave_status(req[2], req[5], req[6], req[7])
-                
-                # st.write(f"**Request for {req[1]}**")
-                # st.write(f"Main Type: {req[9]}")
-                # st.write(f"From: {req[5]} To: {req[6]}")
-                # st.write(f"Type: {req[7]}")
-                # # st.write(f"**Status: {status if status else 'Pending'}**")
+            #     # st.write(req) 
+            #     with st.container(border= True):
+            #         status = get_leave_status(req[2], req[5], req[6], req[7])
+            #         req = list(req)
+            #         req[1] = req[1].strip()
+            #         st.write(f"**Request for: {req[1]}**")                    
+            #         st.write(f"**Request Type:** {req[9]}")
+            #         st.write(f"**From: {req[5]} To:** {req[6]}")
+            #         st.write(f"**Type:** {req[7]}")
+            #         # st.write(f"**Status: {status if status else 'Pending'}**")
+            #         st.write(f"**Reason:**")
+            #         col1, col2 = st.columns(2)
+            #         with col1:
+            #             with st.container(height= 120, border= True):
+            #                 st.write(req[8])
 
-                # st.write(f"Reason: {req[8]}")
+            #         if(req[10] == "VacationLeave"):
+            #             st.write(f"Leave Days: {req[4]}")
 
-                # if(req[10] == "VacationLeave"):
-                #     st.write(f"Leave Days: {req[4]}")
+            #         if(status == "Approve"):
 
-                # if(status == "Approve"):
-
-                #     st.write("**:green-background[Status: :green[Approved]]**")
-                # elif(status == "Reject"):
-                #     st.write("**:red-background[Status: :red[Rejected]]**")
-                # else:
-                #     st.write("**:orange-background[Status: :orange[Pending]]**")
-
-                # st.write("---")
-
-
-
-
-
-
-
-
-
-        # else:
-        #     st.info("You haven't submitted any leave requests yet.")
-        # st.write("**My leave requests history**")
-        # history_data = []
-        # for req in my_requests:
-        #     status = get_leave_status(req[2], req[5], req[6], req[7])
-        #     history_data.append(tuple(req) + (status,))
-
-        # # columns = ["Username", "Name", "Employee ID", "Position", "Days Requested","Start Date",
-        # #            "End Date", "Leave Type", "Reason", "Request Type", "Leave Status"]
-        # columns = ["Username", "Name", "Employee ID", "Position", "Days Requested", "Start Date",
-        #            "End Date", "Leave Type", "Reason", "Request Type", "Original Leave Status", "Final Leave Status"]
-        # st.write()
-        # df = pd.DataFrame(history_data, columns=columns)
-        # df.drop('Original Leave Status', axis=1, inplace=True)
-        
-        # with st.expander("Click to see requests history"):
-        #     st.dataframe(df.iloc[:, :], use_container_width=True, height=500, width=1000 )
-        
-        else:
-            if my_requests:
-                for req in my_requests[:2]:
-                    st.write(req)
+            #             st.write("**:green-background[Status: :green[Approved]]**")
+            #         elif(status == "Reject"):
+            #             st.write("**:red-background[Status: :red[Rejected]]**")
+            #         else:
+            #             st.write("**:orange-background[Status: :orange[Pending]]**")
             
-                st.write("**My leave requests history**")
-                history_data = []
-                for req in my_requests:
+
+
+
+
+            for req in my_requests[:4]:
+                with st.container(border=True):
                     status = get_leave_status(req[2], req[5], req[6], req[7])
-                    history_data.append(req + (status,))
-            
-                # Get column names dynamically
-                columns = [f"Column_{i}" for i in range(len(history_data[0]))]
-                
-                df = pd.DataFrame(history_data, columns=columns)
-                
-                # Rename columns as needed
-                column_mapping = {
-                    "Column_0": "Username",
-                    "Column_1": "Name",
-                    "Column_2": "Employee ID",
-                    "Column_3": "Position",
-                    "Column_4": "Days Requested",
-                    "Column_5": "Start Date",
-                    "Column_6": "End Date",
-                    "Column_7": "Leave Type",
-                    "Column_8": "Reason",
-                    "Column_9": "Request Type",
-                    # Add mappings for the additional columns as needed
-                    f"Column_{len(history_data[0])-1}": "Final Leave Status"
-                }
-                df.rename(columns=column_mapping, inplace=True)
-            
-                with st.expander("Click to see requests history"):
-                    st.dataframe(df, use_container_width=True, height=500, width=1000)
+                    # req = list(req)
                     
+                    def should_display(value):
+                        return value is not None and value != "" and value != "None"
+
+                    if should_display(req[1]):
+                        st.write(f"**Request for: {req[1].strip()}**")
+
+                    if should_display(req[9]):
+                        st.write(f"**Request Type:** {req[9]}")
+
+                    if should_display(req[5]) and should_display(req[6]):
+                        st.write(f"**From: {req[5]} To: {req[6]}**")
+
+                    # if should_display(req[7]):
+                    #     st.write(f"**Type:** {req[7]}")
+                    
+
+
+                    if req[7] == "Appointment" and (should_display(req[10]) or should_display(req[11])):
+                        st.write("**Appointment Details:**")
+                        if should_display(req[10]):
+                            st.write(f"From: {req[10]}")
+                        if should_display(req[11]):
+                            st.write(f"To: {req[11]}")
+                        if should_display(req[14]):
+                            pdf_html = get_pdf_display_html(req[14])
+                            if pdf_html:
+                                with st.expander("View Appointment Letter"):
+                                    st.markdown(pdf_html, unsafe_allow_html=True)
+                            else:
+                                st.write("Appointment Letter: Not available")
+
+                    if req[7] == "Sick" and (should_display(req[12]) or should_display(req[13])):
+                        st.write("**Sick Leave Details:**")
+                        if should_display(req[12]):
+                            st.write(f"From: {req[12]}")
+                        if should_display(req[13]):
+                            st.write(f"To: {req[13]}")
+                        if should_display(req[15]):
+                            pdf_html = get_pdf_display_html(req[15])
+                            if pdf_html:
+                                with st.expander("View Sick Letter"):
+                                    st.markdown(pdf_html, unsafe_allow_html=True)
+                            else:
+                                st.write("Sick Letter: Not available")
+        
+
+
+
+
+
+
+
+
+
+                    if should_display(req[8]):
+                        st.write("**Reason:**")
+                        with st.container(height=120, border=True):
+                            st.write(req[8])
+
+                    if req[9] == "VacationLeave" and should_display(req[4]):
+                        st.write(f"**Leave Days:** {req[4]}")
+
+                    if req[7] == "Appointment" and (should_display(req[10]) or should_display(req[11])):
+                        st.write("**Appointment Details:**")
+                        if should_display(req[10]):
+                            st.write(f"From: {req[10]}")
+                        if should_display(req[11]):
+                            st.write(f"To: {req[11]}")
+                        if should_display(req[14]):
+                            pdf_link = get_pdf_download_link(req[14], "appointment_letter.pdf")
+                            if pdf_link:
+                                st.markdown(pdf_link, unsafe_allow_html=True)
+                            else:
+                                st.write("Appointment Letter: Not available")
+
+                    if req[7] == "Sick" and (should_display(req[12]) or should_display(req[13])):
+                        st.write("**Sick Leave Details:**")
+                        if should_display(req[12]):
+                            st.write(f"From: {req[12]}")
+                        if should_display(req[13]):
+                            st.write(f"To: {req[13]}")
+                        if should_display(req[15]):
+                            pdf_link = get_pdf_download_link(req[15], "sick_letter.pdf")
+                            if pdf_link:
+                                st.markdown(pdf_link, unsafe_allow_html=True)
+                            else:
+                                st.write("Sick Letter: Not available")
+
+                    if req[7] == "Other" and should_display(req[16]):
+                        st.write("**Other Reason:**")
+                        st.write(req[16])
+
+                    if status == "Approve":
+                        st.write("**:green-background[Status: :green[Approved]]**")
+                    elif status == "Reject":
+                        st.write("**:red-background[Status: :red[Rejected]]**")
+                    else:
+                        st.write("**:orange-background[Status: :orange[Pending]]**")
+
+
+
+
+
+
+
+
             
+            st.write("---")
+            st.write("**My leave requests history**")
+            history_data = []
+            for req in my_requests:
+                status = get_leave_status(req[2], req[5], req[6], req[7])
+                history_data.append(tuple(req) + (status,))
+
+            columns = [
+                "Username", "Name", "Employee ID", "Job Title", "Leave Request Days",
+                "From Date", "To Date", "Type of Leave", "Reason", "Main Type",
+                "Appointment From Date", "Appointment To Date", "Sick From Date", "Sick To Date",
+                "Appointment Letter PDF", "Sick Letter PDF", "Other Reason", "Leave Status"
+            ]
+
+            history_data = []
+            for req in my_requests:
+                status = get_leave_status(req[2], req[5], req[6], req[7])
+                history_data.append(req + (status,))
+
+            df = pd.DataFrame(history_data, columns=columns)
+            df = df.drop(['Appointment Letter PDF', 'Sick Letter PDF'], axis=1)
+
+            with st.expander("Click to see requests history"):
+                st.dataframe(df, use_container_width=True)
+
+
+        else:
+            st.info("You haven't submitted any leave requests yet.")
             

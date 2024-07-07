@@ -23,3 +23,6 @@ def company_registration_dashboard():
                 st.error("HR registration failed. Username may already exist.")
         else:
             st.error("Company registration failed. Company name may already exist.")
+
+
+            

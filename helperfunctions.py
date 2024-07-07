@@ -121,8 +121,10 @@ def insert_employee_request(username, name, employee_id, job_title, leave_days, 
 def fetch_all_employee_requests():
     conn = sqlite3.connect('hr_system.db')
     c = conn.cursor()
-    c.execute(""" SELECT *, main_type, Appointment_from_date, Appointment_to_date, 
-              sick_from_date, sick_to_date, appointment_letter_PDF, sick_letter_PDF, other_reason 
+    # c.execute(""" SELECT *, main_type, Appointment_from_date, Appointment_to_date, 
+    #           sick_from_date, sick_to_date, appointment_letter_PDF, sick_letter_PDF, other_reason 
+    #           FROM Employees_Requests """)
+    c.execute(""" SELECT *
               FROM Employees_Requests """)
     rows = c.fetchall()
     conn.close()
@@ -178,7 +180,7 @@ def get_employee_username_by_hr_username(hr_username):
 def fetch_all_employee_requests_under_me(hr_username):
     conn = sqlite3.connect('hr_system.db')
     c = conn.cursor()
-    c.execute("SELECT *, main_type FROM Employees_Requests WHERE Username IN (SELECT username FROM Users WHERE company_id = (SELECT company_id FROM HR_Managers WHERE username = ?))", (hr_username,))
+    c.execute("SELECT * FROM Employees_Requests WHERE Username IN (SELECT username FROM Users WHERE company_id = (SELECT company_id FROM HR_Managers WHERE username = ?))", (hr_username,))
     rows = c.fetchall()
     conn.close()
     return rows
