@@ -48,12 +48,12 @@ def login_user(username, password):
     conn.close()
     return result
 
-def register_user(username, password, company_id):
+def register_user(username, password, company_id, user_email):
     conn = sqlite3.connect('hr_system.db')
     c = conn.cursor()
     try:
-        c.execute("INSERT INTO Users (username, password, company_id) VALUES (?, ?, ?)",
-                  (username, hash_password(password), company_id))
+        c.execute("INSERT INTO Users (username, password, company_id, user_email) VALUES (?, ?, ?, ?)",
+                  (username, hash_password(password), company_id, user_email))
         conn.commit()
         return True
     except sqlite3.IntegrityError:
@@ -157,12 +157,12 @@ def get_companies():
     conn.close()
     return companies
 
-def register_hr(username, password, company_id):
+def register_hr(username, password, company_id, hr_email):
     conn = sqlite3.connect('hr_system.db')
     c = conn.cursor()
     try:
-        c.execute("INSERT INTO HR_Managers (username, password, company_id) VALUES (?, ?, ?)",
-                  (username, hash_password(password), company_id))
+        c.execute("INSERT INTO HR_Managers (username, password, company_id, hr_email) VALUES (?, ?, ?, ?)",
+                  (username, hash_password(password), company_id, hr_email))
         conn.commit()
         return True
     except sqlite3.IntegrityError:
@@ -184,3 +184,24 @@ def fetch_all_employee_requests_under_me(hr_username):
     rows = c.fetchall()
     conn.close()
     return rows
+
+def get_user_email_by_username(username):
+    conn = sqlite3.connect('hr_system.db')
+    c = conn.cursor()
+    c.execute("SELECT user_email FROM Users WHERE username = ?", (username,))
+    result = c.fetchone()
+    conn.close()
+    return result[0] if result else None
+
+def get_hr_email_by_employee_username(employee_username):
+    conn = sqlite3.connect('hr_system.db')
+    c = conn.cursor()
+    c.execute("""
+        SELECT HR_Managers.hr_email 
+        FROM HR_Managers 
+        JOIN Users ON HR_Managers.company_id = Users.company_id 
+        WHERE Users.username = ?
+    """, (employee_username,))
+    result = c.fetchone()
+    conn.close()
+    return result[0] if result else None

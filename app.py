@@ -71,6 +71,10 @@ def main():
                                 st.error("No companies available. Please contact an HR Manager to create a company first.")
                                 return
                         username = st.text_input("New Username", key="signup_username")
+                        if user_type == "HR Manager":
+                            hr_email = st.text_input("HR Email", key="signup_hr_email")
+                        else:
+                            user_email = st.text_input("Email", key="signup_email")
                         password = st.text_input("New Password", type="password", key="signup_password")
 
                         if st.button("Sign Up"):
@@ -79,8 +83,8 @@ def main():
                                     company_id = register_company(new_company_name)
                                     if company_id is None:
                                         st.error("Company registration failed. Company name may already exist.")
-                                        return
-                                if register_hr(username, password, company_id):
+                                        return                                                   
+                                if register_hr(username, password, company_id, hr_email):
                                     st.success("HR registered successfully!")
                                     st.session_state.logged_in = True
                                     st.session_state.username = username
@@ -89,7 +93,7 @@ def main():
                                 else:
                                     st.error("Registration failed. Username may already exist.")
                             else:
-                                if register_user(username, password, company_id):
+                                if register_user(username, password, company_id, user_email):
                                     st.success("Employee registered successfully!")
                                     st.session_state.logged_in = True
                                     st.session_state.username = username

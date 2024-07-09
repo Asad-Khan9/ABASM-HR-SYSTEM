@@ -74,7 +74,6 @@ def employee_dashboard(username):
         if st.button("Submit request "):
             insert_employee_request(username, name, employee_id, job_title, "0", str(from_date), str(to_date), type_of_absence, reason, main_type, str(Appointment_from_date), str(Appointment_to_date), str(sick_from_date), str(sick_to_date), appointment_letter_PDF, sick_letter_PDF, other_reason)
 
-            # insert_employee_request(username, name, employee_id, job_title, "0", str(from_date), str(to_date), type_of_absence, reason, main_type, str(Appointment_from_date), str(Appointment_to_date), str(sick_from_date), str(sick_to_date), appointment_letter_PDF, sick_letter_PDF, other_reason)    
             st.success("Request submitted successfully")
     with tab3:
         st.header("My Leave Requests")
@@ -136,7 +135,7 @@ def employee_dashboard(username):
                 with st.container(border=True):
                     status = get_leave_status(req[2], req[5], req[6], req[7])
                     # req = list(req)
-                    
+
                     def should_display(value):
                         return value is not None and value != "" and value != "None"
 
@@ -181,15 +180,6 @@ def employee_dashboard(username):
                                     st.markdown(pdf_html, unsafe_allow_html=True)
                             else:
                                 st.write("Sick Letter: Not available")
-        
-
-
-
-
-
-
-
-
 
                     if should_display(req[8]):
                         st.write("**Reason:**")
@@ -235,13 +225,6 @@ def employee_dashboard(username):
                         st.write("**:red-background[Status: :red[Rejected]]**")
                     else:
                         st.write("**:orange-background[Status: :orange[Pending]]**")
-
-
-
-
-
-
-
 
             
             st.write("---")

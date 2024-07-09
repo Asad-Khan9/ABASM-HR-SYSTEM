@@ -14,6 +14,7 @@ def init_db():
                   username TEXT NOT NULL UNIQUE,
                   password TEXT NOT NULL,
                   company_id INTEGER,
+                  hr_email TEXT NOT NULL,
                   FOREIGN KEY (company_id) REFERENCES Companies(company_id))''')
     
     c.execute('''CREATE TABLE IF NOT EXISTS Users
@@ -21,6 +22,7 @@ def init_db():
                   username TEXT NOT NULL UNIQUE,
                   password TEXT NOT NULL,
                   company_id INTEGER,
+                  user_email TEXT NOT NULL,
                   FOREIGN KEY (company_id) REFERENCES Companies(company_id))''')
     
     c.execute('''CREATE TABLE IF NOT EXISTS Employees_Requests (

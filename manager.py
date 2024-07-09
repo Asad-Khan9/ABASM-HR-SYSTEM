@@ -125,7 +125,6 @@ def manager_dashboard(username):
                             insert_leave_status(username, row["Name"], row["Employee ID"], action, row["From"], row["To"], row["Leave Type"])
                             st.success(f"Leave request for {row['Name']} processed successfully.")
                         
-
                         #--------->
                             # pdf_content = generate_request_pdf(row, action)
                             # st.markdown(get_binary_file_downloader_html(pdf_content, f'Leave_Request_{row["Employee ID"]}.pdf', 'Download PDF'), unsafe_allow_html=True)
@@ -205,4 +204,4 @@ def manager_dashboard(username):
                 for emp_username in employee_usernames:
                     st.write(f"- {emp_username}")
             else:
-                st.write("No employees found under your management.")
+                st.write("No employees found under your management.")   
