@@ -387,7 +387,7 @@ def get_all_subscriptions():
     conn = sqlite3.connect('hr_system.db')
     c = conn.cursor()
     c.execute("""
-        SELECT id, key, duration, created_at, used_by, used_at
+        SELECT id, key, duration, created_at, used_at
         FROM SubscriptionKeys
         ORDER BY created_at DESC
     """)

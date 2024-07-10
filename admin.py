@@ -32,16 +32,15 @@ def admin_dashboard(username):
     
         if subscriptions:
             # Convert to DataFrame
-            df = pd.DataFrame(subscriptions, columns=['ID', 'Key', 'Duration (days)', 'Created At', 'Used By', 'Used At'])
-            
+            df = pd.DataFrame(subscriptions, columns=['ID', 'Key', 'Duration (days)', 'Created At', 'Used At'])
+
             # Format the DataFrame
             df['Created At'] = pd.to_datetime(df['Created At'])
             df['Used At'] = pd.to_datetime(df['Used At'])
-            df['Status'] = df['Used By'].apply(lambda x: 'Used' if x else 'Available')
-            
+
             # Display the DataFrame
             st.dataframe(df)
-            
+
             # Optional: Add download button for CSV
             csv = df.to_csv(index=False)
             st.download_button(
@@ -52,5 +51,5 @@ def admin_dashboard(username):
             )
         else:
             st.info("No subscription keys found.")
-    
+
         # Add more admin functionalities as needed
