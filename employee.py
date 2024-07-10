@@ -27,9 +27,6 @@ def employee_dashboard(username):
         leave_type = st.selectbox("Type of leave", ["Paid Leave", "Unpaid Leave", "Other"])
         reason = st.text_area("Reason for the Leave")
 
-        # if st.button("Submit request"):
-        #     insert_employee_request(username, name, employee_id, job_title, str(leave_days), str(from_date), str(to_date), leave_type, reason, main_type)
-        #     st.success("Request submitted successfully")
         if st.button("Submit request"):
             insert_employee_request(username, name, employee_id, job_title, str(leave_days), str(from_date), str(to_date), leave_type, reason, main_type)
             st.success("Request submitted successfully")
@@ -95,46 +92,11 @@ def employee_dashboard(username):
                     pdf_display = f'<iframe src="data:application/pdf;base64,{b64}" width="800" height="500" type="application/pdf"></iframe>'
                     return pdf_display
                 return None
-
-
-            # st.table(my_requests)
-
-            # for req in my_requests[:2]:
-            #     # st.write(req) 
-            #     with st.container(border= True):
-            #         status = get_leave_status(req[2], req[5], req[6], req[7])
-            #         req = list(req)
-            #         req[1] = req[1].strip()
-            #         st.write(f"**Request for: {req[1]}**")                    
-            #         st.write(f"**Request Type:** {req[9]}")
-            #         st.write(f"**From: {req[5]} To:** {req[6]}")
-            #         st.write(f"**Type:** {req[7]}")
-            #         # st.write(f"**Status: {status if status else 'Pending'}**")
-            #         st.write(f"**Reason:**")
-            #         col1, col2 = st.columns(2)
-            #         with col1:
-            #             with st.container(height= 120, border= True):
-            #                 st.write(req[8])
-
-            #         if(req[10] == "VacationLeave"):
-            #             st.write(f"Leave Days: {req[4]}")
-
-            #         if(status == "Approve"):
-
-            #             st.write("**:green-background[Status: :green[Approved]]**")
-            #         elif(status == "Reject"):
-            #             st.write("**:red-background[Status: :red[Rejected]]**")
-            #         else:
-            #             st.write("**:orange-background[Status: :orange[Pending]]**")
             
-
-
-
 
             for req in my_requests[:4]:
                 with st.container(border=True):
                     status = get_leave_status(req[2], req[5], req[6], req[7])
-                    # req = list(req)
 
                     def should_display(value):
                         return value is not None and value != "" and value != "None"
@@ -147,11 +109,6 @@ def employee_dashboard(username):
 
                     if should_display(req[5]) and should_display(req[6]):
                         st.write(f"**From: {req[5]} To: {req[6]}**")
-
-                    # if should_display(req[7]):
-                    #     st.write(f"**Type:** {req[7]}")
-                    
-
 
                     if req[7] == "Appointment" and (should_display(req[10]) or should_display(req[11])):
                         st.write("**Appointment Details:**")

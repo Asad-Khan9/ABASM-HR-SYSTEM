@@ -35,99 +35,138 @@ def main():
                     selected_company = st.selectbox("Select Company", company_names, key="login_company")
                     username = st.text_input("Username", key="login_username")
                     password = st.text_input("Password", type="password", key="login_password")
-                    otp = st.text_input("Enter OTP", key="login_otp")
 
                     if st.button("Log In"):
                         if user_type == "HR Manager":
-                            otp_secret = login_hr(username, password)
+                            login_successful = login_hr(username, password)
                         else:
-                            otp_secret = login_user(username, password)
+                            login_successful = login_user(username, password)
 
-                        if otp_secret and verify_otp(otp_secret, otp):
+                        if login_successful:
                             st.session_state.logged_in = True
                             st.session_state.username = username
                             st.session_state.user_type = user_type
                             st.success(f"Logged in as {user_type}: {username}")
                             st.experimental_rerun()
                         else:
-                            st.error("Incorrect username, password, or OTP")
+                            st.error("Incorrect username or password")
 
                 with tab2:
-                    user_type = st.selectbox("I want to register as", ["Employee", "HR Manager"], key="signup_user_type")
-                    if user_type == "HR Manager":
-                        company_option = st.radio("Company", ["Existing Company", "New Company"])
-                        if company_option == "Existing Company":
+                    if 'signup_stage' not in st.session_state:
+                        st.session_state.signup_stage = 'initial'
+                
+                    if st.session_state.signup_stage == 'initial':
+                        user_type = st.selectbox("I want to register as", ["Employee", "HR Manager"], key="signup_user_type")
+                        
+                        if user_type == "HR Manager":
+                            company_option = st.radio("Company", ["Existing Company", "New Company"])
+                            if company_option == "Existing Company":
+                                if companies:
+                                    company_names = [company[1] for company in companies]
+                                    selected_company = st.selectbox("Select Company", company_names, key="signup_company")
+                                    company_id = next(company[0] for company in companies if company[1] == selected_company)
+                                else:
+                                    st.error("No existing companies. Please register a new company.")
+                                    company_option = "New Company"
+                            if company_option == "New Company":
+                                new_company_name = st.text_input("New Company Name")
+                        else:
                             if companies:
                                 company_names = [company[1] for company in companies]
                                 selected_company = st.selectbox("Select Company", company_names, key="signup_company")
                                 company_id = next(company[0] for company in companies if company[1] == selected_company)
                             else:
-                                st.error("No existing companies. Please register a new company.")
-                                company_option = "New Company"
-                        if company_option == "New Company":
-                            new_company_name = st.text_input("New Company Name")
-                    else:
-                        if companies:
-                            company_names = [company[1] for company in companies]
-                            selected_company = st.selectbox("Select Company", company_names, key="signup_company")
-                            company_id = next(company[0] for company in companies if company[1] == selected_company)
-                        else:
-                            st.error("No companies available. Please contact an HR Manager to create a company first.")
-                            return
-                    
-                    username = st.text_input("New Username", key="signup_username")
-                    if user_type == "HR Manager":
-                        email = st.text_input("HR Email", key="signup_hr_email")
-                    else:
+                                st.error("No companies available. Please contact an HR Manager to create a company first.")
+                                st.stop()
+                        
+                        username = st.text_input("New Username", key="signup_username")
                         email = st.text_input("Email", key="signup_email")
-                    password = st.text_input("New Password", type="password", key="signup_password")
-
-                    if st.button("Sign Up"):
-                        if user_type == "HR Manager":
-                            if company_option == "New Company":
+                        password = st.text_input("New Password", type="password", key="signup_password")
+                
+                        if st.button("Register"):
+                            if user_type == "HR Manager" and company_option == "New Company":
                                 company_id = register_company(new_company_name)
                                 if company_id is None:
                                     st.error("Company registration failed. Company name may already exist.")
-                                    return  
-                            otp_secret = register_hr(username, password, company_id, email)
-                        else:
-                            otp_secret = register_user(username, password, company_id, email)
-
-                        st.success("Registration successful! Scan the QR code with your authenticator app.")
-                        if otp_secret:
-                            uri = generate_otp_uri(otp_secret, username)
-                            col1, col2 = st.columns(2)
-                            with col1:
-                                qr_code = generate_qr_code(uri)
-                                st.markdown(f"""
-                                    <style>
-                                        .qr-code {{
-                                            width: auto;
-                                            height: auto;
-                                            display: block;
-                                            margin: auto;
-                                        }}
-                                    </style>
-                                    <img src='data:image/png;base64,{qr_code}' alt='QR Code' class='qr-code'>
-                                    """, unsafe_allow_html=True)
-
-                            with col2:
-                                st.info("Instructions:")
-                                st.write("1. Open your authenticator app (e.g., Google Authenticator, Authy)")
-                                st.write("2. Add a new account by scanning the QR code above")
-                                st.write("3. Enter the 6-digit code displayed in your app below")
-                                st.info("After scanning, enter the OTP to complete setup:")
-                            setup_otp = st.text_input("Enter OTP to complete setup", key="setup_otp")
-
-
-                            if st.button("Verify OTP"):
-                                if verify_otp(otp_secret, setup_otp):
-                                    st.success(f"{user_type} registered successfully!")
+                                    st.stop()
+                            
+                            # Check if username already exists
+                            if user_exists(username):
+                                st.error("Username already exists. Please choose a different username.")
+                            else:
+                                # Generate and send OTP
+                                otp = generate_otp()
+                                if send_otp_email(email, otp):
+                                    st.session_state.otp = otp
+                                    st.session_state.signup_stage = 'otp_verification'
+                                    st.session_state.signup_data = {
+                                        'user_type': user_type,
+                                        'company_id': company_id,
+                                        'username': username,
+                                        'email': email,
+                                        'password': password
+                                    }
+                                    st.success("OTP sent to your email. Please check and enter below.")
                                     st.experimental_rerun()
                                 else:
-                                    st.error("Invalid OTP. Please try again.")
-                        else:
-                            st.error("Registration failed. Username may already exist.")
+                                    st.error("Failed to send OTP. Please try again.")
+                
+                    elif st.session_state.signup_stage == 'otp_verification':
+                        st.write("Please enter the OTP sent to your email.")
+                        entered_otp = st.text_input("Enter OTP", key="entered_otp")
+
+                        if st.button("Verify OTP"):
+                            st.write(f"Stored OTP: {st.session_state.otp}")
+                            st.write(f"Entered OTP: {entered_otp}")
+                            if verify_otp(st.session_state.otp, entered_otp):
+                                st.write("OTP verified successfully")
+                                st.write(f"Debug: signup_data = {st.session_state.signup_data}")
+                                # Perform registration
+                                if st.session_state.signup_data['user_type'] == "HR Manager":
+                                    success, message = register_hr(
+                                        st.session_state.signup_data['username'],
+                                        st.session_state.signup_data['password'],
+                                        st.session_state.signup_data['company_id'],
+                                        st.session_state.signup_data['email']
+                                    )
+                                else:
+                                    success, message = register_user(
+                                        st.session_state.signup_data['username'],
+                                        st.session_state.signup_data['password'],
+                                        st.session_state.signup_data['company_id'],
+                                        st.session_state.signup_data['email']
+                                    )
+
+                                st.write(f"Registration result: {message}")
+
+                                if success:
+                                    st.success(f"{st.session_state.signup_data['user_type']} registered successfully!")
+                                    st.session_state.logged_in = True
+                                    st.session_state.username = st.session_state.signup_data['username']
+                                    st.session_state.user_type = st.session_state.signup_data['user_type']
+                                    st.session_state.signup_stage = 'initial'  # Reset for future signups
+                                    del st.session_state.signup_data  # Clean up
+                                    st.experimental_rerun()
+                                else:
+                                    st.error(f"Registration failed. Reason: {message}")
+                            else:
+                                st.error("Invalid OTP. Please try again.")
+                
+                        if st.button("Resend OTP"):
+                            otp = generate_otp()
+                            if send_otp_email(st.session_state.signup_data['email'], otp):
+                                st.session_state.otp = otp
+                                st.success("New OTP sent to your email. Please check and enter above.")
+                            else:
+                                st.error("Failed to send OTP. Please try again.")
+                
+                    # Add a way to go back to the initial signup stage
+                    if st.session_state.signup_stage == 'otp_verification':
+                        if st.button("Start Over"):
+                            st.session_state.signup_stage = 'initial'
+                            if 'signup_data' in st.session_state:
+                                del st.session_state.signup_data
+                            st.experimental_rerun()
 
                 with tab3:
                     st.header("Subscription Plans")
@@ -141,7 +180,7 @@ def main():
                     # Example usage
                     if st.button("Generate Subscription Key"):
                         subscription_key = generate_subscription_key()
-                        st.header(subscription_key)
+                        st.write(subscription_key)
 
 
 
@@ -160,6 +199,7 @@ def main():
                 if st.session_state.user_type == "HR Manager":
                     manager_dashboard(st.session_state.username)
                 else:
+
                     employee_dashboard(st.session_state.username)
         with col3:
             st.write("")
