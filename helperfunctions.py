@@ -13,7 +13,7 @@ import smtplib
 import random
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 
 def hash_password(password):
     return hashlib.sha256(str.encode(password)).hexdigest()
@@ -202,11 +202,11 @@ def login_user(username, password):
     conn.close()
     return result is not None
 
-# load_dotenv()
+load_dotenv()
 def send_otp_email(email, otp):
-    sender_email = 'smartstichpro@gmail.com'
-    sender_password = 'podpwziokndtqdty'
     
+    sender_email = os.getenv('EMAIL_USER')
+    sender_password = os.getenv('EMAIL_PASSWORD')
     message = MIMEMultipart("alternative")
     message["Subject"] = "Your OTP for HR Management System"
     message["From"] = sender_email
