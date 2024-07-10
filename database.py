@@ -15,6 +15,7 @@ def init_db():
                   password TEXT NOT NULL,
                   company_id INTEGER,
                   hr_email TEXT NOT NULL,
+                  otp_secret TEXT NOT NULL,
                   FOREIGN KEY (company_id) REFERENCES Companies(company_id))''')
     
     c.execute('''CREATE TABLE IF NOT EXISTS Users
@@ -23,6 +24,7 @@ def init_db():
                   password TEXT NOT NULL,
                   company_id INTEGER,
                   user_email TEXT NOT NULL,
+                  otp_secret TEXT NOT NULL,
                   FOREIGN KEY (company_id) REFERENCES Companies(company_id))''')
     
     c.execute('''CREATE TABLE IF NOT EXISTS Employees_Requests (
@@ -45,12 +47,6 @@ def init_db():
                  other_reason TEXT,
                  FOREIGN KEY (Username) REFERENCES Users(username))''')
     
-    # c.execute('''CREATE TABLE IF NOT EXISTS Leave_Status
-    #              (Username TEXT NOT NULL,
-    #               Name TEXT NOT NULL,
-    #               Employee_id TEXT NOT NULL,
-    #               Leave_status TEXT NOT NULL)''')
-    # conn.commit()
     c.execute('''CREATE TABLE IF NOT EXISTS Leave_Status
              (Username TEXT NOT NULL,
               Name TEXT NOT NULL,
@@ -59,4 +55,8 @@ def init_db():
               from_date TEXT NOT NULL,
               to_date TEXT NOT NULL,
               leave_type TEXT NOT NULL)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS Abasm_Admins
+             (abasm_admin_id INTEGER PRIMARY KEY AUTOINCREMENT,
+              username TEXT NOT NULL UNIQUE,
+              password TEXT NOT NULL)''')
     conn.close()
