@@ -2,7 +2,6 @@ import sqlite3
 
 def init_db():
 
-    
     conn = sqlite3.connect('hr_system.db')
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS Companies
@@ -59,4 +58,17 @@ def init_db():
              (abasm_admin_id INTEGER PRIMARY KEY AUTOINCREMENT,
               username TEXT NOT NULL UNIQUE,
               password TEXT NOT NULL)''')
+    
+    c.execute('''CREATE TABLE IF NOT EXISTS SubscriptionKeys (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              key TEXT UNIQUE,
+              duration INTEGER,  
+              created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+              used_by INTEGER,  
+              used_at DATETIME)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS Abasm_Admins
+             (admin_id INTEGER PRIMARY KEY AUTOINCREMENT,
+              username TEXT NOT NULL UNIQUE,
+              password TEXT NOT NULL)''')
+    
     conn.close()

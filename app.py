@@ -1,6 +1,7 @@
 import streamlit as st
 from helperfunctions import *
 from employee import employee_dashboard
+from admin import admin_dashboard
 from manager import manager_dashboard
 from database import init_db
 import time
@@ -70,6 +71,7 @@ def main():
                                     company_option = "New Company"
                             if company_option == "New Company":
                                 new_company_name = st.text_input("New Company Name")
+                                subscription_key = st.text_input("Enter Subscription Key")
                         else:
                             if companies:
                                 company_names = [company[1] for company in companies]
@@ -85,7 +87,7 @@ def main():
                 
                         if st.button("Register"):
                             if user_type == "HR Manager" and company_option == "New Company":
-                                company_id = register_company(new_company_name)
+                                company_id, message = register_company_with_key(new_company_name, subscription_key)
                                 if company_id is None:
                                     st.error("Company registration failed. Company name may already exist.")
                                     st.stop()
@@ -169,21 +171,36 @@ def main():
                             st.experimental_rerun()
 
                 with tab3:
-                    st.header("Subscription Plans")
-                    st.selectbox("Select Plans", ["3 Months", "6 Month", "1 Year"])
 
+                    tab1, tab2 = st.tabs(["Admin Login", "Admin Signup"])
 
-                    def generate_subscription_key(length=40):
-                        characters = string.ascii_letters + string.digits + "$@#-"
-                        return ''.join(secrets.choice(characters) for _ in range(length))
-
-                    # Example usage
-                    if st.button("Generate Subscription Key"):
-                        subscription_key = generate_subscription_key()
-                        st.write(subscription_key)
-
-
-
+                    with tab1:
+                        st.header("Admin Login")
+                        admin_username = st.text_input("Admin Username", key="admin_username")
+                        admin_password = st.text_input("Admin Password", type="password", key="admin_password")
+                        if st.button("Login"):
+                            if authenticate_admin(admin_username, admin_password):
+                                st.session_state.logged_in = True
+                                st.session_state.username = admin_username
+                                st.session_state.user_type = "Admin"
+                                st.success(f"Login successful!: {admin_username}")
+                                st.experimental_rerun()
+                            else:
+                                st.error("Invalid admin username or password.")
+                    with tab2:
+                        st.header("Admin Signup")
+                        admin_username = st.text_input("Admin Username ", key="admin_username ")
+                        admin_password = st.text_input("Admin Password ", type="password", key="admin_password ")
+                        if st.button("Signup"):
+                            if create_initial_admin(admin_username, admin_password):
+                                st.session_state.logged_in = True
+                                st.session_state.username = admin_username
+                                st.session_state.user_type = "Admin"
+                                st.success(f"Signup successful!: {admin_username}")
+                                st.experimental_rerun()
+                            else:
+                                st.error("Username already exists. Please choose a different username.")
+                                
                 st.markdown('</div>', unsafe_allow_html=True)
 
             else:
@@ -198,8 +215,9 @@ def main():
 
                 if st.session_state.user_type == "HR Manager":
                     manager_dashboard(st.session_state.username)
+                elif st.session_state.user_type == "Admin":
+                    admin_dashboard(st.session_state.username)
                 else:
-
                     employee_dashboard(st.session_state.username)
         with col3:
             st.write("")

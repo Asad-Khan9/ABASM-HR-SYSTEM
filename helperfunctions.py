@@ -14,6 +14,10 @@ import random
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
+import secrets
+import string
+from datetime import datetime, timedelta
+
 
 def hash_password(password):
     return hashlib.sha256(str.encode(password)).hexdigest()
@@ -26,16 +30,38 @@ def check_company_exists():
     conn.close()
     return result is not None
 
-def register_company(company_name):
+# def register_company(company_name):
+#     conn = sqlite3.connect('hr_system.db')
+#     c = conn.cursor()
+#     try:
+#         c.execute("INSERT INTO Companies (company_name) VALUES (?)", (company_name,))
+#         company_id = c.lastrowid
+#         conn.commit()
+#         return company_id
+#     except sqlite3.IntegrityError:
+#         return None
+#     finally:
+#         conn.close()
+
+def register_company_with_key(company_name, subscription_key):
     conn = sqlite3.connect('hr_system.db')
     c = conn.cursor()
     try:
+        c.execute("SELECT * FROM SubscriptionKeys WHERE key = ? AND used_by IS NULL", (subscription_key,))
+        key_data = c.fetchone()
+        if not key_data:
+            return None, "Invalid or used subscription key"
+        
         c.execute("INSERT INTO Companies (company_name) VALUES (?)", (company_name,))
         company_id = c.lastrowid
+        
+        c.execute("UPDATE SubscriptionKeys SET used_by = ?, used_at = CURRENT_TIMESTAMP WHERE key = ?",
+                  (company_id, subscription_key))
+        
         conn.commit()
-        return company_id
+        return company_id, "Success"
     except sqlite3.IntegrityError:
-        return None
+        return None, "Company name already exists"
     finally:
         conn.close()
 
@@ -196,11 +222,18 @@ def login_hr(username, password):
 def login_user(username, password):
     conn = sqlite3.connect('hr_system.db')
     c = conn.cursor()
-    c.execute("SELECT * FROM Users WHERE username = ? AND password = ?",
+    c.execute("SELECT user_id, company_id FROM Users WHERE username = ? AND password = ?",
               (username, hash_password(password)))
     result = c.fetchone()
     conn.close()
-    return result is not None
+    
+    if result:
+        user_id, company_id = result
+        if is_subscription_valid(company_id):
+            return True
+        else:
+            return "Subscription expired"
+    return False
 
 load_dotenv()
 def send_otp_email(email, otp):
@@ -293,3 +326,71 @@ def register_user(username, password, company_id, email):
         return False, f"Unexpected error: {str(e)}"
     finally:
         conn.close()
+
+def generate_subscription_key(days):
+    key = ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(16))
+    conn = sqlite3.connect('hr_system.db')
+    c = conn.cursor()
+    c.execute("INSERT INTO SubscriptionKeys (key, duration) VALUES (?, ?)", (key, days))
+    conn.commit()
+    conn.close()
+    return key
+
+
+def is_subscription_valid(company_id):
+    conn = sqlite3.connect('hr_system.db')
+    c = conn.cursor()
+    c.execute("""
+        SELECT used_at, duration 
+        FROM SubscriptionKeys 
+        WHERE used_by = ? 
+        ORDER BY used_at DESC 
+        LIMIT 1
+    """, (company_id,))
+    result = c.fetchone()
+    conn.close()
+    
+    if not result:
+        return False
+    
+    used_at, duration = result
+    expiry_date = datetime.strptime(used_at, '%Y-%m-%d %H:%M:%S') + timedelta(days=duration)
+    return datetime.now() < expiry_date
+
+
+
+def authenticate_admin(username, password):
+    conn = sqlite3.connect('hr_system.db')
+    c = conn.cursor()
+    c.execute("SELECT * FROM Abasm_Admins WHERE username = ? AND password = ?", 
+              (username, hash_password(password)))
+    result = c.fetchone()
+    conn.close()
+    return result is not None
+
+
+def create_initial_admin(username, password):
+    conn = sqlite3.connect('hr_system.db')
+    c = conn.cursor()
+    try:
+        c.execute("INSERT INTO Abasm_Admins (username, password) VALUES (?, ?)",
+                  (username, hash_password(password)))
+        conn.commit()
+        return True
+    except sqlite3.IntegrityError:
+        return False
+    finally:
+        conn.close()
+
+
+def get_all_subscriptions():
+    conn = sqlite3.connect('hr_system.db')
+    c = conn.cursor()
+    c.execute("""
+        SELECT id, key, duration, created_at, used_by, used_at
+        FROM SubscriptionKeys
+        ORDER BY created_at DESC
+    """)
+    subscriptions = c.fetchall()
+    conn.close()
+    return subscriptions

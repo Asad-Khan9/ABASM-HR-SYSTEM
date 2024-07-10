@@ -7,9 +7,10 @@ def company_registration_dashboard():
     company_name = st.text_input("Company Name")
     hr_username = st.text_input("HR Username")
     hr_password = st.text_input("HR Password", type="password")
+    subscription_key = st.text_input("Subscription Key")
     
     if st.button("Register Company"):
-        company_id = register_company(company_name)
+        company_id, message = register_company_with_key(company_name, subscription_key)
         if company_id:
             if register_hr(hr_username, hr_password, company_id):
                 st.success("Company and HR registered successfully!")
@@ -22,7 +23,4 @@ def company_registration_dashboard():
             else:
                 st.error("HR registration failed. Username may already exist.")
         else:
-            st.error("Company registration failed. Company name may already exist.")
-
-
-            
+            st.error(f"Company registration failed. {message}")
