@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import os
+# import pdfkit
 from datetime import datetime
 from datetime import date 
 from io import BytesIO
@@ -132,7 +133,7 @@ def manager_dashboard(username):
                                     file_name=f"Leave_Request_{row['Employee ID']}.pdf",
                                     mime="application/pdf"
                                 )
-
+                    
 
 
 
@@ -171,44 +172,26 @@ def manager_dashboard(username):
 
 
         with tab2:
-            def get_binary_file_downloader_html(bin_data, file_label='File', btn_label='Download', file_name='file.pdf'):
-                bin_str = base64.b64encode(bin_data).decode()
-                href = f'<a href="data:application/octet-stream;base64,{bin_str}" download="{file_name}">{btn_label}</a>'
-                return href
-            st.header("Employment Contract Form")
-            
-            contract_date = st.date_input("Contract Date")
-            employee_name = st.text_input("Employee Name")
-            national_id = st.text_input("National ID Number")
-            
-            # Text area for agreed terms
-            agreed_terms = st.text_area("Terms of Agreement", height=300, 
-                                        value="""1. The second party is committed to working for the first party in the profession of [JOB TITLE].
-                                        2. The duration of this contract is [DURATION] starting from [START DATE].
-                                        3. The second party's salary is a monthly total of [TOTAL SALARY] Saudi riyals.
-                                        4. [ADD MORE TERMS AS NEEDED]
-
-                                        The parties agree to abide by these terms and conditions.""")
+            st.header("Contract Details")
+            first_party = st.text_input("Employer Name")
+            second_party = st.text_input("Employee Name")
+            date_of_contract = st.date_input("Date of Contract", value=datetime.today())
         
-            if st.button("Generate Contract PDF"):
-                # Create the HTML content (use the html_content string from above)
-                # html_content = contract_form_html(contract_date, employee_name, national_id, agreed_terms)
-
-                options = {
-                    'page-size': 'A4',
-                    'margin-top': '0.5in',
-                    'margin-right': '0.5in',
-                    'margin-bottom': '0.5in',
-                    'margin-left': '0.5in',
-                    'encoding': "UTF-8",
-                    'no-outline': None
-                }
-                
-                # Generate PDF in memory
-                # pdf_data = pdfkit.from_string(html_content, False, options=options)
-                
-                # Offer the PDF as a download
-                # st.markdown(get_binary_file_downloader_html(pdf_data, 'Contract.pdf', 'Download PDF'), unsafe_allow_html=True)
+            st.header("Contract Terms")
+            num_agreements = st.number_input("Number of Terms", min_value=1, value=5, step=1)
+        
+            agreements = []
+            for i in range(num_agreements):
+                agreement_content = st.text_area(f"Term {i + 1}", height=100)
+                agreements.append({'content': agreement_content})
+        
+            if st.button("Generate Contract"):
+                if all([first_party, second_party, date_of_contract]) and all(agreement['content'] for agreement in agreements):
+                    pdf_path = generate_contract_pdf(agreements, first_party, second_party, date_of_contract)
+                    with open(pdf_path, "rb") as pdf_file:
+                        st.download_button("Download Employment Contract", pdf_file, "employment_contract.pdf")
+                else:
+                    st.error("Please fill in all required fields and ensure all terms have content.")
 
         with tab3:
             employee_usernames = get_employee_username_by_hr_username(username)

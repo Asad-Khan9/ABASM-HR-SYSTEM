@@ -15,6 +15,7 @@ def admin_dashboard(username):
         st.header("Generate Subscription Key")
         duration_options = ["3 Months", "6 Months", "1 Year", "Other"]
         duration = st.selectbox("Select Plan Duration", duration_options)
+        # price = st.number_input("Enter Price", min_value=0.0, step=0.01)
 
         days = 0
 

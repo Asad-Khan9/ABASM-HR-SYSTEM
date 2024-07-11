@@ -18,7 +18,9 @@ def employee_dashboard(username):
         left.header("Vacation Leave Request")
         right.info(f"**{main_type} requesting on:** {today_date}")
 
-        name = st.text_input("Name")
+        # name = st.text_input("Name")
+        name = username
+        st.write(f"**Name:** {username}")
         employee_id = st.text_input("Employee ID")
         job_title = st.text_input("Job title")
         leave_days = st.number_input("Leave request Days", min_value=1, value=1)
@@ -37,7 +39,9 @@ def employee_dashboard(username):
         left.header("Absence Leave Request")
         right.info(f"**{main_type} requesting on:** {today_date}")
 
-        name = st.text_input("Name ")
+        # name = st.text_input("Name ")
+        name = username
+        st.write(f"**Name:** {username}")
         employee_id = st.text_input("Employee ID ")
         job_title = st.text_input("Job title ")
         type_of_absence = st.selectbox("Type of Absence", ["Paid Leave", "Unpaid Leave", "Sick", "Appointment", "Other"])
