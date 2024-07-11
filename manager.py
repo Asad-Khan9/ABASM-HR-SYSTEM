@@ -123,6 +123,20 @@ def manager_dashboard(username):
                         action = st.radio(f"Choose an action for {row['Name']}:", ("Approve", "Reject"), key=action_key)
                         if st.button(f"Process Request for {row['Name']}", key=f"process_{index}"):
                             insert_leave_status(username, row["Name"], row["Employee ID"], action, row["From"], row["To"], row["Leave Type"])
+
+                            pdf_path = generate_leave_request_pdf(row, action)
+        
+                            with open(pdf_path, "rb") as pdf_file:
+                                st.download_button(
+                                    label="Download Leave Request PDF",
+                                    data=pdf_file,
+                                    file_name=f"Leave_Request_{row['Employee ID']}.pdf",
+                                    mime="application/pdf"
+                                )
+                    
+
+
+
                             st.success(f"Leave request for {row['Name']} processed successfully.")
                         
                         #--------->
@@ -179,7 +193,7 @@ def manager_dashboard(username):
         
             if st.button("Generate Contract PDF"):
                 # Create the HTML content (use the html_content string from above)
-                html_content = contract_form_html(contract_date, employee_name, national_id, agreed_terms)
+                # html_content = contract_form_html(contract_date, employee_name, national_id, agreed_terms)
 
                 options = {
                     'page-size': 'A4',
@@ -192,10 +206,10 @@ def manager_dashboard(username):
                 }
                 
                 # Generate PDF in memory
-                pdf_data = pdfkit.from_string(html_content, False, options=options)
+                # pdf_data = pdfkit.from_string(html_content, False, options=options)
                 
                 # Offer the PDF as a download
-                st.markdown(get_binary_file_downloader_html(pdf_data, 'Contract.pdf', 'Download PDF'), unsafe_allow_html=True)
+                # st.markdown(get_binary_file_downloader_html(pdf_data, 'Contract.pdf', 'Download PDF'), unsafe_allow_html=True)
 
         with tab3:
             employee_usernames = get_employee_username_by_hr_username(username)
