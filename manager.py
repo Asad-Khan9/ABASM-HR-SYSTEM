@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import os
-import pdfkit
 from datetime import datetime
 from datetime import date 
 from io import BytesIO
@@ -133,7 +132,7 @@ def manager_dashboard(username):
                                     file_name=f"Leave_Request_{row['Employee ID']}.pdf",
                                     mime="application/pdf"
                                 )
-                    
+
 
 
 
